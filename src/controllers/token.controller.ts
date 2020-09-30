@@ -1,3 +1,4 @@
+import {inject} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -7,14 +8,16 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  HttpErrors,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
+  RestBindings,
 } from '@loopback/rest';
 import {Token} from '../models';
 import {TokenRepository} from '../repositories';
@@ -22,8 +25,25 @@ import {TokenRepository} from '../repositories';
 export class TokenController {
   constructor(
     @repository(TokenRepository)
-    public tokenRepository : TokenRepository,
+    public tokenRepository: TokenRepository,
   ) {}
+
+  @del('/logout')
+  async logout(@inject(RestBindings.Http.REQUEST) request: any): Promise<void> {
+    const access_token = request.header('access_token');
+    if (!access_token) {
+      throw new HttpErrors[422]('Required header not found');
+    }
+
+    const token = await this.tokenRepository.findOne({
+      where: {token: access_token},
+    });
+
+    if (!token) {
+      throw new HttpErrors[404]('Token not found');
+    }
+    await this.tokenRepository.delete(token);
+  }
 
   @post('/tokens', {
     responses: {
@@ -57,9 +77,7 @@ export class TokenController {
       },
     },
   })
-  async count(
-    @param.where(Token) where?: Where<Token>,
-  ): Promise<Count> {
+  async count(@param.where(Token) where?: Where<Token>): Promise<Count> {
     return this.tokenRepository.count(where);
   }
 
@@ -78,9 +96,7 @@ export class TokenController {
       },
     },
   })
-  async find(
-    @param.filter(Token) filter?: Filter<Token>,
-  ): Promise<Token[]> {
+  async find(@param.filter(Token) filter?: Filter<Token>): Promise<Token[]> {
     return this.tokenRepository.find(filter);
   }
 
@@ -120,7 +136,8 @@ export class TokenController {
   })
   async findById(
     @param.path.number('id') id: number,
-    @param.filter(Token, {exclude: 'where'}) filter?: FilterExcludingWhere<Token>
+    @param.filter(Token, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Token>,
   ): Promise<Token> {
     return this.tokenRepository.findById(id, filter);
   }
