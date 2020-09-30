@@ -59,6 +59,11 @@ export class User extends Entity {
   @hasMany(() => Token, {keyTo: 'user_id'})
   tokens: Token[];
 
+  @property({
+    type: 'number',
+  })
+  userTag_id?: number;
+
   constructor(data?: Partial<User>) {
     super(data);
   }

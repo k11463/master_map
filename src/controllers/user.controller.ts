@@ -1,36 +1,55 @@
 import {
-  Count,
-  CountSchema,
   Filter,
   FilterExcludingWhere,
-  repository,
-  Where
+  repository
 } from '@loopback/repository';
 import {
   del, get,
-  getModelSchemaRef, param,
+  getModelSchemaRef,
+  HttpErrors, param,
   patch, post,
   put,
   requestBody
 } from '@loopback/rest';
 import bcrypt from 'bcrypt';
-import {User} from '../models';
-import {UserRepository} from '../repositories';
+import jwt from 'jsonwebtoken';
+import {Login, Token, User} from '../models';
+import {TokenRepository, UserRepository} from '../repositories';
 
 export class UserController {
   constructor(
     @repository(UserRepository)
     public userRepository: UserRepository,
+    @repository(TokenRepository)
+    public tokenRepository: TokenRepository
   ) {}
 
-  @post('/users', {
-    responses: {
-      '200': {
-        description: 'User model instance',
-        content: {'application/json': {schema: getModelSchemaRef(User)}},
-      },
-    },
-  })
+  @post('/login')
+  async singin(
+    @requestBody() login: Login
+  ): Promise<Token> {
+    const findUser = await this.userRepository.findOne({
+      where: {email: login.email}
+    })
+    if (findUser == null) {
+      throw new HttpErrors[404]('User not found');
+    }
+    else {
+      const passwordMatch = await bcrypt.compare(login.password, findUser?.password);
+      if (passwordMatch) {
+        let createdToken = await jwt.sign(login.password, `${process.env.JWT_SECRET}`);
+        const token: Token = new Token();
+        token.user_id = findUser.user_id!;
+        token.token = createdToken;
+        return this.userRepository.tokens(findUser.user_id).create(token);
+      }
+      else {
+        throw new HttpErrors[404]('Password Wrong');
+      }
+    }
+  }
+
+  @post('/signup')
   async create(
     @requestBody({
       content: {
@@ -49,61 +68,11 @@ export class UserController {
     return this.userRepository.create(user);
   }
 
-  @get('/users/count', {
-    responses: {
-      '200': {
-        description: 'User model count',
-        content: {'application/json': {schema: CountSchema}},
-      },
-    },
-  })
-  async count(
-    @param.where(User) where?: Where<User>,
-  ): Promise<Count> {
-    return this.userRepository.count(where);
-  }
-
-  @get('/users', {
-    responses: {
-      '200': {
-        description: 'Array of User model instances',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: getModelSchemaRef(User, {includeRelations: true}),
-            },
-          },
-        },
-      },
-    },
-  })
+  @get('/users')
   async find(
     @param.filter(User) filter?: Filter<User>,
   ): Promise<User[]> {
     return this.userRepository.find(filter);
-  }
-
-  @patch('/users', {
-    responses: {
-      '200': {
-        description: 'User PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
-      },
-    },
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(User, {partial: true}),
-        },
-      },
-    })
-    user: User,
-    @param.where(User) where?: Where<User>,
-  ): Promise<Count> {
-    return this.userRepository.updateAll(user, where);
   }
 
   @get('/users/{id}', {
@@ -125,13 +94,7 @@ export class UserController {
     return this.userRepository.findById(id, filter);
   }
 
-  @patch('/users/{id}', {
-    responses: {
-      '204': {
-        description: 'User PATCH success',
-      },
-    },
-  })
+  @patch('/users/{id}')
   async updateById(
     @param.path.number('id') id: number,
     @requestBody({
@@ -146,13 +109,7 @@ export class UserController {
     await this.userRepository.updateById(id, user);
   }
 
-  @put('/users/{id}', {
-    responses: {
-      '204': {
-        description: 'User PUT success',
-      },
-    },
-  })
+  @put('/users/{id}')
   async replaceById(
     @param.path.number('id') id: number,
     @requestBody() user: User,
@@ -160,13 +117,7 @@ export class UserController {
     await this.userRepository.replaceById(id, user);
   }
 
-  @del('/users/{id}', {
-    responses: {
-      '204': {
-        description: 'User DELETE success',
-      },
-    },
-  })
+  @del('/users/{id}')
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.userRepository.deleteById(id);
   }

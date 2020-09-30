@@ -1,25 +1,12 @@
 import {inject} from '@loopback/core';
 import {
-  Count,
-  CountSchema,
-  Filter,
-  FilterExcludingWhere,
-  repository,
-  Where,
+  repository
 } from '@loopback/repository';
 import {
   del,
-  get,
-  getModelSchemaRef,
   HttpErrors,
-  param,
-  patch,
-  post,
-  put,
-  requestBody,
-  RestBindings,
+  RestBindings
 } from '@loopback/rest';
-import {Token} from '../models';
 import {TokenRepository} from '../repositories';
 
 export class TokenController {
@@ -29,162 +16,19 @@ export class TokenController {
   ) {}
 
   @del('/logout')
-  async logout(@inject(RestBindings.Http.REQUEST) request: any): Promise<void> {
+  async logout(
+    @inject(RestBindings.Http.REQUEST) request: any
+  ): Promise<void> {
     const access_token = request.header('access_token');
     if (!access_token) {
       throw new HttpErrors[422]('Required header not found');
     }
-
     const token = await this.tokenRepository.findOne({
       where: {token: access_token},
     });
-
     if (!token) {
       throw new HttpErrors[404]('Token not found');
     }
     await this.tokenRepository.delete(token);
-  }
-
-  @post('/tokens', {
-    responses: {
-      '200': {
-        description: 'Token model instance',
-        content: {'application/json': {schema: getModelSchemaRef(Token)}},
-      },
-    },
-  })
-  async create(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Token, {
-            title: 'NewToken',
-            exclude: ['token_id'],
-          }),
-        },
-      },
-    })
-    token: Omit<Token, 'token_id'>,
-  ): Promise<Token> {
-    return this.tokenRepository.create(token);
-  }
-
-  @get('/tokens/count', {
-    responses: {
-      '200': {
-        description: 'Token model count',
-        content: {'application/json': {schema: CountSchema}},
-      },
-    },
-  })
-  async count(@param.where(Token) where?: Where<Token>): Promise<Count> {
-    return this.tokenRepository.count(where);
-  }
-
-  @get('/tokens', {
-    responses: {
-      '200': {
-        description: 'Array of Token model instances',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: getModelSchemaRef(Token, {includeRelations: true}),
-            },
-          },
-        },
-      },
-    },
-  })
-  async find(@param.filter(Token) filter?: Filter<Token>): Promise<Token[]> {
-    return this.tokenRepository.find(filter);
-  }
-
-  @patch('/tokens', {
-    responses: {
-      '200': {
-        description: 'Token PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
-      },
-    },
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Token, {partial: true}),
-        },
-      },
-    })
-    token: Token,
-    @param.where(Token) where?: Where<Token>,
-  ): Promise<Count> {
-    return this.tokenRepository.updateAll(token, where);
-  }
-
-  @get('/tokens/{id}', {
-    responses: {
-      '200': {
-        description: 'Token model instance',
-        content: {
-          'application/json': {
-            schema: getModelSchemaRef(Token, {includeRelations: true}),
-          },
-        },
-      },
-    },
-  })
-  async findById(
-    @param.path.number('id') id: number,
-    @param.filter(Token, {exclude: 'where'})
-    filter?: FilterExcludingWhere<Token>,
-  ): Promise<Token> {
-    return this.tokenRepository.findById(id, filter);
-  }
-
-  @patch('/tokens/{id}', {
-    responses: {
-      '204': {
-        description: 'Token PATCH success',
-      },
-    },
-  })
-  async updateById(
-    @param.path.number('id') id: number,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Token, {partial: true}),
-        },
-      },
-    })
-    token: Token,
-  ): Promise<void> {
-    await this.tokenRepository.updateById(id, token);
-  }
-
-  @put('/tokens/{id}', {
-    responses: {
-      '204': {
-        description: 'Token PUT success',
-      },
-    },
-  })
-  async replaceById(
-    @param.path.number('id') id: number,
-    @requestBody() token: Token,
-  ): Promise<void> {
-    await this.tokenRepository.replaceById(id, token);
-  }
-
-  @del('/tokens/{id}', {
-    responses: {
-      '204': {
-        description: 'Token DELETE success',
-      },
-    },
-  })
-  async deleteById(@param.path.number('id') id: number): Promise<void> {
-    await this.tokenRepository.deleteById(id);
   }
 }
