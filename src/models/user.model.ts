@@ -1,8 +1,11 @@
 import {Entity, hasMany, model, property} from '@loopback/repository';
+import {Tag} from './tag.model';
 import {Token} from './token.model';
+import {UserTag} from './user-tag.model';
 
 @model()
 export class User extends Entity {
+
   @property({
     type: 'number',
     id: true,
@@ -19,6 +22,12 @@ export class User extends Entity {
     }
   })
   email: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  user_name: string;
 
   @property({
     type: 'string',
@@ -63,6 +72,9 @@ export class User extends Entity {
     type: 'number',
   })
   userTag_id?: number;
+
+  @hasMany(() => Tag, {through: {model: () => UserTag, keyFrom: 'user_id', keyTo: 'tag_id'}})
+  tags: Tag[];
 
   constructor(data?: Partial<User>) {
     super(data);
