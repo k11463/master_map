@@ -1,6 +1,8 @@
 import {Entity, hasMany, model, property} from '@loopback/repository';
+import {Course} from './course.model';
 import {Tag} from './tag.model';
 import {Token} from './token.model';
+import {UserCourse} from './user-course.model';
 import {UserTag} from './user-tag.model';
 
 @model()
@@ -73,8 +75,17 @@ export class User extends Entity {
   })
   userTag_id?: number;
 
+  @property({
+    type: 'number',
+    default: 1
+  })
+  authority?: number;
+
   @hasMany(() => Tag, {through: {model: () => UserTag, keyFrom: 'user_id', keyTo: 'tag_id'}})
   tags: Tag[];
+
+  @hasMany(() => Course, {through: {model: () => UserCourse, keyFrom: 'student_id', keyTo: 'course_id'}})
+  courses: Course[];
 
   constructor(data?: Partial<User>) {
     super(data);

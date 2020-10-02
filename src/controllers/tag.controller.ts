@@ -1,15 +1,11 @@
 import {
-
   Filter,
   repository
 } from '@loopback/repository';
 import {
   del,
   get,
-
-
   HttpErrors, param,
-
   post,
   requestBody
 } from '@loopback/rest';
@@ -26,7 +22,7 @@ export class UserTagController {
   ) {}
 
   @get('/userTags/{userId}')
-  async find(
+  async findUserTags(
     @param.path.number('userId') userId: number,
     @param.query.object('filter') filter?: Filter<Tag>,
   ): Promise<Tag[]> {
@@ -34,7 +30,7 @@ export class UserTagController {
   }
 
   @post('/addTag/{userId}')
-  async create(
+  async addTag(
     @param.path.number('userId') userId: typeof User.prototype.user_id,
     @requestBody() tag: Tag,
     @param.query.object('filter') filter?: Filter<Tag>,
@@ -72,7 +68,7 @@ export class UserTagController {
   }
 
   @del('/removeTag/{userId}/{tag_name}')
-  async delete(
+  async removeTag(
     @param.path.number('userId') userId: number,
     @param.path.string('tag_name') tag_name: string,
     @param.query.object('filter') filter?: Filter<Tag>,
@@ -103,5 +99,13 @@ export class UserTagController {
         }
       }
     }
+  }
+
+  @get('/tagUsers/{tagId}')
+  async findTagUsers(
+    @param.path.number('tagId') tagId: number,
+    @param.query.object('filter') filter?: Filter<User>,
+  ): Promise<User[]> {
+    return this.tagRepository.users(tagId).find(filter);
   }
 }
