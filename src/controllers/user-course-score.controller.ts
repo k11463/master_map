@@ -16,20 +16,20 @@ import {
   requestBody,
 } from '@loopback/rest';
 import {
-  Course,
+  User,
   CourseScore,
 } from '../models';
-import {CourseRepository} from '../repositories';
+import {UserRepository} from '../repositories';
 
-export class CourseCourseScoreController {
+export class UserCourseScoreController {
   constructor(
-    @repository(CourseRepository) protected courseRepository: CourseRepository,
+    @repository(UserRepository) protected userRepository: UserRepository,
   ) { }
 
-  @get('/courses/{id}/course-scores', {
+  @get('/users/{id}/course-scores', {
     responses: {
       '200': {
-        description: 'Array of Course has many CourseScore',
+        description: 'Array of User has many CourseScore',
         content: {
           'application/json': {
             schema: {type: 'array', items: getModelSchemaRef(CourseScore)},
@@ -42,38 +42,38 @@ export class CourseCourseScoreController {
     @param.path.number('id') id: number,
     @param.query.object('filter') filter?: Filter<CourseScore>,
   ): Promise<CourseScore[]> {
-    return this.courseRepository.scores(id).find(filter);
+    return this.userRepository.scores(id).find(filter);
   }
 
-  @post('/courses/{id}/course-scores', {
+  @post('/users/{id}/course-scores', {
     responses: {
       '200': {
-        description: 'Course model instance',
+        description: 'User model instance',
         content: {'application/json': {schema: getModelSchemaRef(CourseScore)}},
       },
     },
   })
   async create(
-    @param.path.number('id') id: typeof Course.prototype.course_id,
+    @param.path.number('id') id: typeof User.prototype.user_id,
     @requestBody({
       content: {
         'application/json': {
           schema: getModelSchemaRef(CourseScore, {
-            title: 'NewCourseScoreInCourse',
+            title: 'NewCourseScoreInUser',
             exclude: ['score_id'],
-            optional: ['course_id']
+            optional: ['user_id']
           }),
         },
       },
     }) courseScore: Omit<CourseScore, 'score_id'>,
   ): Promise<CourseScore> {
-    return this.courseRepository.scores(id).create(courseScore);
+    return this.userRepository.scores(id).create(courseScore);
   }
 
-  @patch('/courses/{id}/course-scores', {
+  @patch('/users/{id}/course-scores', {
     responses: {
       '200': {
-        description: 'Course.CourseScore PATCH success count',
+        description: 'User.CourseScore PATCH success count',
         content: {'application/json': {schema: CountSchema}},
       },
     },
@@ -90,13 +90,13 @@ export class CourseCourseScoreController {
     courseScore: Partial<CourseScore>,
     @param.query.object('where', getWhereSchemaFor(CourseScore)) where?: Where<CourseScore>,
   ): Promise<Count> {
-    return this.courseRepository.scores(id).patch(courseScore, where);
+    return this.userRepository.scores(id).patch(courseScore, where);
   }
 
-  @del('/courses/{id}/course-scores', {
+  @del('/users/{id}/course-scores', {
     responses: {
       '200': {
-        description: 'Course.CourseScore DELETE success count',
+        description: 'User.CourseScore DELETE success count',
         content: {'application/json': {schema: CountSchema}},
       },
     },
@@ -105,6 +105,6 @@ export class CourseCourseScoreController {
     @param.path.number('id') id: number,
     @param.query.object('where', getWhereSchemaFor(CourseScore)) where?: Where<CourseScore>,
   ): Promise<Count> {
-    return this.courseRepository.scores(id).delete(where);
+    return this.userRepository.scores(id).delete(where);
   }
 }

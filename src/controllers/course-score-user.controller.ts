@@ -8,31 +8,31 @@ import {
 } from '@loopback/rest';
 import {
   CourseScore,
-  Course,
+  User,
 } from '../models';
 import {CourseScoreRepository} from '../repositories';
 
-export class CourseScoreCourseController {
+export class CourseScoreUserController {
   constructor(
     @repository(CourseScoreRepository)
     public courseScoreRepository: CourseScoreRepository,
   ) { }
 
-  @get('/course-scores/{id}/course', {
+  @get('/course-scores/{id}/user', {
     responses: {
       '200': {
-        description: 'Course belonging to CourseScore',
+        description: 'User belonging to CourseScore',
         content: {
           'application/json': {
-            schema: {type: 'array', items: getModelSchemaRef(Course)},
+            schema: {type: 'array', items: getModelSchemaRef(User)},
           },
         },
       },
     },
   })
-  async getCourse(
+  async getUser(
     @param.path.number('id') id: typeof CourseScore.prototype.score_id,
-  ): Promise<Course> {
-    return this.courseScoreRepository.courseId(id);
+  ): Promise<User> {
+    return this.courseScoreRepository.user(id);
   }
 }

@@ -1,5 +1,6 @@
-import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
 import {Course} from './course.model';
+import {User} from './user.model';
 
 @model()
 export class CourseScore extends Entity {
@@ -15,8 +16,17 @@ export class CourseScore extends Entity {
   })
   score_content?: string;
 
+  @property({
+    type: 'number',
+    required: true
+  })
+  score: number;
+
   @belongsTo(() => Course, {name: 'courseId'})
   course_id: number;
+
+  @belongsTo(() => User, {name: 'user'})
+  user_id: number;
 
   constructor(data?: Partial<CourseScore>) {
     super(data);

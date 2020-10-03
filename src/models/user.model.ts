@@ -4,6 +4,7 @@ import {Tag} from './tag.model';
 import {Token} from './token.model';
 import {UserCourse} from './user-course.model';
 import {UserTag} from './user-tag.model';
+import {CourseScore} from './course-score.model';
 
 @model()
 export class User extends Entity {
@@ -86,6 +87,14 @@ export class User extends Entity {
 
   @hasMany(() => Course, {through: {model: () => UserCourse, keyFrom: 'student_id', keyTo: 'course_id'}})
   courses: Course[];
+
+  @property({
+    type: 'number',
+  })
+  courseScore_id?: number;
+
+  @hasMany(() => CourseScore, {keyTo: 'user_id'})
+  scores: CourseScore[];
 
   constructor(data?: Partial<User>) {
     super(data);

@@ -108,16 +108,12 @@ export class CourseController {
   }
 
   @get('/courses')
-  async getCourse(
-    @param.filter(Course) filter?: Filter<Course>,
-  ): Promise<Course[]> {
+  async getCourse(@param.filter(Course) filter?: Filter<Course>,): Promise<Course[]> {
     return this.courseRepository.find(filter);
   }
 
   @get('/courses/teacher/{userId}')
-  async teacherGetCourses(
-    @param.path.number('userId') userId: number,
-  ): Promise<Course[]> {
+  async teacherGetCourses(@param.path.number('userId') userId: number,): Promise<Course[]> {
     const findCourses = await this.courseRepository.find({where: {teacher_id: userId}});
     if (findCourses.length == 0) {
       throw new HttpErrors['404']('你沒有開任何課程');
